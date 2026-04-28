@@ -1061,6 +1061,7 @@ class TestRetrievalVariantRegistry:
             "bm25_grep",
             "grep_only",
             "bm25",
+            "AllTools",
         }
         assert expected.issubset(set(names))
         assert set(names) == set(RETRIEVAL_VARIANTS.keys())
@@ -1084,6 +1085,15 @@ class TestRetrievalVariantRegistry:
         assert variant.kb_search.top_k == 5
         assert variant.grep.top_k == 3
 
+    def test_resolve_variant_all_tools_top_k_applies_to_dual_pipelines(self):
+        from tau2.domains.banking_knowledge.retrieval import resolve_variant
+
+        variant = resolve_variant("AllTools", top_k=7)
+        assert variant.kb_search_bm25 is not None
+        assert variant.kb_search_dense is not None
+        assert variant.kb_search_bm25.top_k == 7
+        assert variant.kb_search_dense.top_k == 7
+
     def test_bm25_variant(self):
         from tau2.domains.banking_knowledge.retrieval import resolve_variant
 
@@ -1099,6 +1109,59 @@ class TestRetrievalVariantRegistry:
         assert variant.name == "grep_only"
         assert variant.grep.top_k == 3
         assert variant.supports_top_k is True
+
+
+class TestAllToolsEmbedderWarmupMapping:
+    def test_unique_embedder_config_all_tools_openai_defaults(self):
+        from tau2.knowledge.embeddings_cache import (
+            get_unique_embedder_configs_for_retrieval_configs,
+        )
+
+        configs = get_unique_embedder_configs_for_retrieval_configs(
+            ["AllTools"],
+            {"dense_embedding_type": "openai_api"},
+        )
+        assert configs == [("openai", {"model": "text-embedding-3-large"})]
+
+    def test_unique_embedder_config_all_tools_openrouter(self):
+        from tau2.knowledge.embeddings_cache import (
+            get_unique_embedder_configs_for_retrieval_configs,
+        )
+
+        configs = get_unique_embedder_configs_for_retrieval_configs(
+            ["AllTools"],
+            {"dense_embedding_type": "openrouter"},
+        )
+        assert configs == [("openrouter", {"model": "qwen3-embedding-8b"})]
+
+
+class TestBankingKnowledgeRunConfigDefaults:
+    def test_text_run_config_defaults_retrieval_to_all_tools(self):
+        from tau2.data_model.simulation import TextRunConfig
+
+        cfg = TextRunConfig(domain="banking_knowledge")
+        assert cfg.retrieval_config == "AllTools"
+
+    def test_dense_flags_merge_into_retrieval_kwargs_for_all_tools_only(self):
+        from tau2.data_model.simulation import TextRunConfig
+
+        cfg = TextRunConfig(
+            domain="banking_knowledge",
+            retrieval_config="bm25",
+            dense_embedding_type="openrouter",
+            dense_embedding_model="custom-model",
+        )
+        assert cfg.retrieval_config == "bm25"
+        assert cfg.retrieval_config_kwargs is None
+
+        cfg2 = TextRunConfig(
+            domain="banking_knowledge",
+            dense_embedding_type="openrouter",
+        )
+        assert cfg2.retrieval_config == "AllTools"
+        assert cfg2.retrieval_config_kwargs == {
+            "dense_embedding_type": "openrouter",
+        }
 
 
 class TestNoKnowledgeVariant:

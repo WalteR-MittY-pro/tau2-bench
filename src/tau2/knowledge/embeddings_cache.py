@@ -595,15 +595,19 @@ def _compute_and_cache_embeddings(
 
 def get_unique_embedder_configs_for_retrieval_configs(
     retrieval_config_names: List[str],
+    retrieval_config_kwargs: Optional[dict] = None,
 ) -> List[Tuple[str, Dict[str, Any]]]:
     """Get unique embedder configurations for a list of retrieval config names.
 
     Args:
         retrieval_config_names: List of retrieval config names (e.g., ["classic_rag_qwen", "classic_rag_openai"])
+        retrieval_config_kwargs: Optional kwargs (e.g. dense_embedding_type for ``AllTools``).
 
     Returns:
         List of unique (embedder_type, embedder_params) tuples
     """
+    retrieval_config_kwargs = retrieval_config_kwargs or {}
+
     CONFIG_EMBEDDERS = {
         "qwen_embeddings_grep": ("openrouter", {"model": "qwen3-embedding-8b"}),
         "qwen_embeddings_reranker_grep": (
@@ -625,6 +629,24 @@ def get_unique_embedder_configs_for_retrieval_configs(
     unique_configs = []
 
     for config_name in retrieval_config_names:
+        if config_name == "AllTools":
+            from tau2.domains.banking_knowledge.retrieval import (
+                DEFAULT_DENSE_EMBEDDING_TYPE,
+                map_dense_embedding_cli_to_pipeline,
+            )
+
+            det = retrieval_config_kwargs.get(
+                "dense_embedding_type"
+            ) or DEFAULT_DENSE_EMBEDDING_TYPE
+            dem = retrieval_config_kwargs.get("dense_embedding_model")
+            embedder_type, model = map_dense_embedding_cli_to_pipeline(det, dem)
+            config = (embedder_type, {"model": model})
+            key = (config[0], json.dumps(config[1], sort_keys=True))
+            if key not in seen:
+                seen.add(key)
+                unique_configs.append(config)
+            continue
+
         if config_name in CONFIG_EMBEDDERS:
             config = CONFIG_EMBEDDERS[config_name]
             key = (config[0], json.dumps(config[1], sort_keys=True))

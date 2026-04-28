@@ -6,7 +6,20 @@ Domains with a knowledge base (currently just `banking_knowledge`) use a `--retr
 tau2 run --domain banking_knowledge --retrieval-config <config_name> --agent-llm gpt-4.1 --user-llm gpt-4.1
 ```
 
-If `--retrieval-config` is omitted, the default is `bm25` (offline, no API keys needed). A warning is printed to remind you to choose a config explicitly.
+If `--retrieval-config` is omitted for `banking_knowledge`, the default is **`AllTools`**: BM25 search, dense embedding search, and read-only shell (see below). Choose an offline-only config such as **`bm25`** if you want no API keys or sandbox.
+
+### AllTools (`AllTools`)
+
+| Tool | Role |
+|------|------|
+| `KB_search_bm25` | BM25 sparse retrieval; pass **`k`** (default 10) for result count |
+| `KB_search_dense` | Dense embeddings; pass **`k`** (default 10); backend set via CLI |
+| `shell` | Same read-only sandboxed shell as `terminal_use` |
+
+Requirements: **sandbox-runtime** for `shell`, and an embedding API for dense search:
+
+- **`--dense-embedding-type openai_api`** (default): uses OpenAI embeddings — set **`OPENAI_API_KEY`**. Default model: **`text-embedding-3-large`** (override with **`--dense-embedding-model`**).
+- **`--dense-embedding-type openrouter`**: uses OpenRouter — set **`OPENROUTER_API_KEY`**. Default model: **`qwen3-embedding-8b`** (override with **`--dense-embedding-model`**).
 
 ## Retrieval Configs
 
@@ -21,6 +34,7 @@ If `--retrieval-config` is omitted, the default is `bm25` (offline, no API keys 
 | `qwen_embeddings` | `KB_search` | `OPENROUTER_API_KEY` |
 | `terminal_use` | `shell` | `sandbox-runtime` (see below) |
 | `terminal_use_write` | `shell` | `sandbox-runtime` (see below) |
+| `AllTools` | `KB_search_bm25`, `KB_search_dense`, `shell` | BM25 offline + see AllTools section above |
 
 The `bm25`, `openai_embeddings`, and `qwen_embeddings` configs can also be combined with:
 - `_reranker` suffix — adds an LLM reranker postprocessor (requires `OPENAI_API_KEY`)
@@ -41,7 +55,7 @@ The `qwen_embeddings*` configs route through [OpenRouter](https://openrouter.ai/
 
 ### sandbox-runtime
 
-The `terminal_use` and `terminal_use_write` configs require [Anthropic's sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) for secure filesystem isolation:
+The `terminal_use`, `terminal_use_write`, and `AllTools` configs require [Anthropic's sandbox-runtime](https://github.com/anthropic-experimental/sandbox-runtime) for secure filesystem isolation:
 
 ```bash
 npm install -g @anthropic-ai/sandbox-runtime@0.0.23

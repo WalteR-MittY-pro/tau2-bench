@@ -98,6 +98,100 @@ class GrepMixin(metaclass=ToolKitType):
         return "\n".join(formatted)
 
 
+class KBSearchBm25AllToolsMixin(metaclass=ToolKitType):
+    """BM25 search for AllTools; expects ``self._kb_bm25_pipeline``."""
+
+    @is_tool(ToolType.READ)
+    def KB_search_bm25(self, query: str, k: int = 10) -> str:
+        """Search the knowledge base using BM25 sparse retrieval.
+
+        Args:
+            query: The search query to find relevant documents.
+            k: Maximum number of documents to return (default 10).
+
+        Returns:
+            Relevant document excerpts matching the query.
+        """
+        retrieval_result = self._kb_bm25_pipeline.retrieve(
+            query, top_k=k, return_timing=True
+        )
+        results = retrieval_result.results
+        timing = retrieval_result.timing
+
+        if not results:
+            output = "No relevant documents found."
+            output += f"\n\n[Timing: retrieval={timing.retrieval_ms:.0f}ms"
+            if timing.postprocessing_ms > 0:
+                output += f", reranking={timing.postprocessing_ms:.0f}ms"
+            output += f", total={timing.total_ms:.0f}ms]"
+            return output
+
+        formatted = []
+        for i, (doc_id, score) in enumerate(results, 1):
+            title = self._kb_bm25_pipeline.get_document_title(doc_id) or "Untitled"
+            content = self._kb_bm25_pipeline.get_document_content(doc_id) or ""
+            formatted.append(
+                f"{i}. {title}\n"
+                f"   ID: {doc_id}\n"
+                f"   Score: {score:.4f}\n"
+                f"   Content: {content}\n"
+            )
+
+        output = "\n".join(formatted)
+        output += f"\n\n[Timing: retrieval={timing.retrieval_ms:.0f}ms"
+        if timing.postprocessing_ms > 0:
+            output += f", reranking={timing.postprocessing_ms:.0f}ms"
+        output += f", total={timing.total_ms:.0f}ms]"
+        return output
+
+
+class KBSearchDenseAllToolsMixin(metaclass=ToolKitType):
+    """Dense embedding search for AllTools; expects ``self._kb_dense_pipeline``."""
+
+    @is_tool(ToolType.READ)
+    def KB_search_dense(self, query: str, k: int = 10) -> str:
+        """Search the knowledge base using dense embedding retrieval.
+
+        Args:
+            query: The search query to find relevant documents.
+            k: Maximum number of documents to return (default 10).
+
+        Returns:
+            Relevant document excerpts matching the query.
+        """
+        retrieval_result = self._kb_dense_pipeline.retrieve(
+            query, top_k=k, return_timing=True
+        )
+        results = retrieval_result.results
+        timing = retrieval_result.timing
+
+        if not results:
+            output = "No relevant documents found."
+            output += f"\n\n[Timing: retrieval={timing.retrieval_ms:.0f}ms"
+            if timing.postprocessing_ms > 0:
+                output += f", reranking={timing.postprocessing_ms:.0f}ms"
+            output += f", total={timing.total_ms:.0f}ms]"
+            return output
+
+        formatted = []
+        for i, (doc_id, score) in enumerate(results, 1):
+            title = self._kb_dense_pipeline.get_document_title(doc_id) or "Untitled"
+            content = self._kb_dense_pipeline.get_document_content(doc_id) or ""
+            formatted.append(
+                f"{i}. {title}\n"
+                f"   ID: {doc_id}\n"
+                f"   Score: {score:.4f}\n"
+                f"   Content: {content}\n"
+            )
+
+        output = "\n".join(formatted)
+        output += f"\n\n[Timing: retrieval={timing.retrieval_ms:.0f}ms"
+        if timing.postprocessing_ms > 0:
+            output += f", reranking={timing.postprocessing_ms:.0f}ms"
+        output += f", total={timing.total_ms:.0f}ms]"
+        return output
+
+
 class ShellMixin(metaclass=ToolKitType):
     """MixIn that provides the shell tool.
 
