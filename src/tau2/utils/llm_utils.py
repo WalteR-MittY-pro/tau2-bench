@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import threading
 import time
 import uuid
 import warnings
@@ -101,6 +102,32 @@ if LLM_CACHE_ENABLED:
 else:
     logger.info("LiteLLM: Cache is disabled")
     litellm.disable_cache()
+
+
+class _RateLimiter:
+    def __init__(self, min_interval: float = 0.0):
+        self._lock = threading.Lock()
+        self._last_call_perf: float = 0.0
+        self.min_interval = min_interval
+
+    def wait(self) -> None:
+        if self.min_interval <= 0:
+            return
+        with self._lock:
+            now = time.perf_counter()
+            remaining = self.min_interval - (now - self._last_call_perf)
+            if remaining > 0:
+                logger.debug(
+                    f"[rate-limit] sleeping {remaining:.2f}s "
+                    f"(min_interval={self.min_interval:.2f}s)"
+                )
+                time.sleep(remaining)
+            self._last_call_perf = time.perf_counter()
+
+
+_rate_limiter = _RateLimiter(
+    min_interval=float(os.environ.get("TAU2_LLM_MIN_INTERVAL", "0") or 0)
+)
 
 
 def _parse_ft_model_name(model: str) -> str:
@@ -375,6 +402,7 @@ def generate(
 
     Returns: A tuple containing the message and the cost.
     """
+    _rate_limiter.wait()
     validate_message_history(messages)
     if kwargs.get("num_retries") is None:
         kwargs["num_retries"] = DEFAULT_MAX_RETRIES
