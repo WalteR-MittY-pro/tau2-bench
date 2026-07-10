@@ -72,6 +72,7 @@ def build_agent(
     llm: Optional[str] = None,
     llm_args: Optional[dict] = None,
     task: Optional[Task] = None,
+    tau2_prompt_context: Optional[dict] = None,
     audio_native_config: Optional[AudioNativeConfig] = None,
     solo_mode: bool = False,
     audio_taps_dir: Optional[Path] = None,
@@ -120,6 +121,7 @@ def build_agent(
         llm=llm,
         llm_args=llm_args,
         task=task,
+        tau2_prompt_context=tau2_prompt_context,
         audio_native_config=audio_native_config,
         audio_taps_dir=audio_taps_dir,
     )
@@ -369,6 +371,7 @@ def build_text_orchestrator(
         llm=config.llm_agent,
         llm_args=config.llm_args_agent,
         task=task,
+        tau2_prompt_context=config.tau2_prompt_context,
         solo_mode=solo_mode,
     )
 

@@ -1,0 +1,32 @@
+{
+  "description": "Purpose: Test the create_task functionality\nNotes: Basic task creation test with a simple title",
+  "evaluation_mode": "half_duplex",
+  "public_context": {
+    "available_tools": [
+      {
+        "description": "def create_task(user_id: str, title: str, description: str = None) -> tau2.domains.mock.data_model.Task:\n    \"\"\"\n        Create a new task for a user.\n\n        Args:\n            user_id: The ID of the user creating the task\n            title: The title of the task\n            description: Optional description of the task\n\n        Returns:\n            The created task\n\n        Raises:\n            ValueError: If the user is not found\n        \"\"\"",
+        "name": "create_task"
+      },
+      {
+        "description": "def get_users() -> list[tau2.domains.mock.data_model.User]:\n    \"\"\"\n        Get all users in the database.\n        \"\"\"",
+        "name": "get_users"
+      },
+      {
+        "description": "def update_task_status(task_id: str, status: Literal['pending', 'completed']) -> tau2.domains.mock.data_model.Task:\n    \"\"\"\n        Update the status of a task.\n\n        Args:\n            task_id: The ID of the task to update\n            status: The new status of the task\n\n        Returns:\n            The updated task\n\n        Raises:\n            ValueError: If the task is not found\n        \"\"\"",
+        "name": "update_task_status"
+      },
+      {
+        "description": "def transfer_to_human_agents(summary: str) -> str:\n    \"\"\"\n        Transfer the user to a human agent, with a summary of the user's issue.\n        Only transfer if\n         -  the user explicitly asks for a human agent\n         -  given the policy and the available tools, you cannot solve the user's issue.\n\n        Args:\n            summary: A summary of the user's issue.\n\n        Returns:\n            A message indicating the user has been transferred to a human agent.\n        \"\"\"",
+        "name": "transfer_to_human_agents"
+      }
+    ],
+    "communication_mode": "half_duplex",
+    "domain": "mock",
+    "policy_excerpt": "# Mock Domain Policy\n\n1. Each task must have a title\n2. Task status can only be \"pending\" or \"completed\"\n3. Only existing users can create tasks \n4. You are not allowed to delete tasks. You should transfer the a human agent.\n5. If the user asks for a compliment, compliment them",
+    "task_split": "base",
+    "ticket_summary": "User needs to create a task for an upcoming meeting. Create a new task called 'Important Meeting' for user_1.",
+    "user_scenario_summary": "Persona:\n\tProfessional and direct communicator who writes in a clear and concise style\nInstructions:\n\tYou are a team member who needs to create a task for an upcoming meeting. Your goal is to create a task to track this important meeting. Create a new task called 'Important Meeting' for user_1."
+  },
+  "task_id": "create_task_1",
+  "title": "create_task_1"
+}

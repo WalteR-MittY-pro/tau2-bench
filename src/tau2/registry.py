@@ -14,6 +14,7 @@ from tau2.agent.llm_agent import (
     create_llm_gt_agent,
     create_llm_solo_agent,
 )
+from tau2.agent.skill_injected_agent import create_skill_injected_agent
 from tau2.data_model.tasks import Task
 from tau2.domains.airline.environment import (
     get_environment as airline_domain_get_environment,
@@ -310,6 +311,7 @@ try:
         create_discrete_time_audio_native_agent,
         "discrete_time_audio_native_agent",
     )
+    registry.register_agent_factory(create_skill_injected_agent, "skill_injected")
     registry.register_domain(mock_domain_get_environment, "mock")
     registry.register_tasks(mock_domain_get_tasks, "mock")
 

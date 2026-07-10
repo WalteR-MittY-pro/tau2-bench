@@ -540,6 +540,13 @@ class TextRunConfig(BaseRunConfig):
             default_factory=lambda: deepcopy(DEFAULT_LLM_ARGS_AGENT),
         ),
     ]
+    tau2_prompt_context: Annotated[
+        Optional[dict],
+        Field(
+            description="Optional prompt context for skill_injected agent.",
+            default=None,
+        ),
+    ]
 
     # ---- User ----
     user: Annotated[

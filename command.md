@@ -21,7 +21,7 @@ for DOMAIN in airline retail telecom; do
     --user-llm openai/minimax-m3 \
     --num-trials 1 \
     --max-steps 50 \
-    --max-concurrency 3 \
+    --max-concurrency 5 \
     --save-to baseline_minimax_m3 \
     --log-level WARNING
 done

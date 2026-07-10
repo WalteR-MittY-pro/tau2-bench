@@ -225,3 +225,4 @@ data/simulations/.credentials/
 
 # Cursor IDE
 .cursor/
+taskoutput/
