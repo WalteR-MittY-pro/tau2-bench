@@ -5,7 +5,6 @@ from typing import Optional
 from tau2.agent.llm_agent import AGENT_INSTRUCTION, LLMAgent, LLMAgentStateType
 from tau2.environment.tool import Tool
 
-
 SYSTEM_PROMPT_SKILL_INJECTED = """
 <instructions>
 {agent_instruction}
